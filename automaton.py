@@ -7,8 +7,40 @@ from typing import Dict, List, Union
 from collections import OrderedDict, Counter # remember order of insertion
 import sys
 import os.path
-from graphviz import Source
 import pdb
+import pip
+
+########################################################################
+########################################################################
+
+def warn(message, *, warntype="WARNING", pos="", **format_args):
+  """Print warning message."""
+  msg_list = message.format(**format_args).split("\n")
+  beg, end = ('\x1b[31m', '\x1b[m') if sys.stderr.isatty() else ('', '')
+  if pos: pos += ": "
+  for i, msg in enumerate(msg_list):
+    warn = warntype if i==0 else "."*len(warntype)
+    print(beg, pos, warn, ": ", msg, end, sep="", file=sys.stderr)
+
+##################
+
+def error(message, **kwargs):
+    """Print error message and quit."""
+    warn(message, warntype="ERROR", **kwargs)
+    sys.exit(1)
+    
+########################################################################
+########################################################################
+
+try: # Make the library robust
+  from graphviz import Source
+except ModuleNotFoundError:
+  warn("Warning: graphviz not installed, will not draw automaton graphically")
+  class Source: # Dummy class for typing only
+    def __init__(self,res):
+      pass
+    def render(self,outfilename):
+      warn("Graphviz not installed, cannot draw automaton")
 
 EPSILON = "%" # Constant to represent empty string
 
@@ -274,25 +306,6 @@ class Automaton():
       error("File not found: {f}",f=infilename)
     name = os.path.splitext(os.path.basename(infilename))[0]
     return self.from_txt("".join(rows), name)
-
-########################################################################
-########################################################################
-
-def warn(message, *, warntype="WARNING", pos="", **format_args):
-  """Print warning message."""
-  msg_list = message.format(**format_args).split("\n")
-  beg, end = ('\x1b[31m', '\x1b[m') if sys.stderr.isatty() else ('', '')
-  if pos: pos += ": "
-  for i, msg in enumerate(msg_list):
-    warn = warntype if i==0 else "."*len(warntype)
-    print(beg, pos, warn, ": ", msg, end, sep="", file=sys.stderr)
-
-##################
-
-def error(message, **kwargs):
-    """Print error message and quit."""
-    warn(message, warntype="ERROR", **kwargs)
-    sys.exit(1)
     
 ########################################################################
 ########################################################################
@@ -305,12 +318,11 @@ if __name__ == "__main__": # If the module is run from command line, test it
   a.add_transition("2","b","2")  
   a.make_accept(["0","1", "2"])  
   print(a)
+  a.to_graphviz("my-test-automaton.gv")
   a.reset()
   for testfile in ["astarbstar","astarbstar-nfa","astarbstar-epsilon"]:
     a.from_txtfile("test/{}.af".format(testfile))
     a.to_graphviz("test/{}.gv".format(testfile))
     print(a)
     print(a.to_txtfile())
-  #a.from_txtfile("test/astarbstar-epsilon.af")
-  #print(a.to_graphviz("rendertest").source)
 

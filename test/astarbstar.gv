@@ -4,8 +4,8 @@ digraph finite_state_machine {
   node [shape = circle];
   __I__ [label="", style=invis, width=0]
   __I__ -> 0
-  0 -> 1 [label = ε];
-  0 -> 2 [label = ε];
+  0 -> 1 [label = a];
+  0 -> 2 [label = b];
   1 -> 1 [label = a];
   2 -> 2 [label = b];
 }
