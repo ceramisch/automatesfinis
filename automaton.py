@@ -72,7 +72,7 @@ class State():
     """
     self.is_accept = True
 
-##################warn(
+##################
    
   def add_transition(self, symbol:str, dest:'State'):
     """
@@ -137,6 +137,17 @@ class Automaton():
     dst_state = self.statesdict.get(dst, State(dst)) # create if absent
     self.statesdict[dst] = dst_state # if new, add to dict
     src_state.add_transition(symbol, dst_state) # add the transition    
+
+##################
+
+  def remove_transition(self, src:str, symbol:str, dst:str):
+    """
+    Remove a transition from `src` to `dst` on `symbol`
+    """ 
+    try:
+      del(self.statesdict[src].transitions[symbol][self.statesdict[dst]])
+    except KeyError:
+      warn("Transition {} -{}-> {} not found".format(src,symbol,dst))
 
 ##################
 
