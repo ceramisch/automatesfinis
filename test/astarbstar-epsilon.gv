@@ -1,6 +1,6 @@
 digraph finite_state_machine {
   rankdir=LR;  
-  size="8,5"  label="astarbstar-epsilon"  node [shape = doublecircle]; 0 1 2;
+  size="8,5"  label="astarbstar-epsilon"  node [shape = doublecircle]; 1 2;
   node [shape = circle];
   __I__ [label="", style=invis, width=0]
   __I__ -> 0
