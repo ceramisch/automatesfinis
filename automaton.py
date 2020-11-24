@@ -8,7 +8,7 @@ from collections import OrderedDict, Counter # remember order of insertion
 import sys
 import os.path
 import pdb
-import pip
+import re
 
 ########################################################################
 ########################################################################
@@ -72,7 +72,7 @@ class State():
     """
     self.is_accept = True
 
-##################warn(
+##################
    
   def add_transition(self, symbol:str, dest:'State'):
     """
@@ -91,7 +91,7 @@ class State():
     """
     Standard function to obtain a string representation of a state
     """
-    return self.name
+    return self.name.replace('"',"&quot;")
 
 ########################################################################
 ########################################################################
@@ -140,6 +140,17 @@ class Automaton():
 
 ##################
 
+  def remove_transition(self, src:str, symbol:str, dst:str):
+    """
+    Remove a transition from `src` to `dst` on `symbol`
+    """ 
+    try:
+      del(self.statesdict[src].transitions[symbol][self.statesdict[dst]])
+    except KeyError:
+      warn("Transition {} -{}-> {} not found".format(src,symbol,dst))
+
+##################
+
   @property
   def states(self) -> List[str]:
     return list(self.statesdict.keys())
@@ -168,6 +179,22 @@ class Automaton():
                                  if v.is_accept})
     return list(accept.keys())
     
+##################
+
+  def rename_state(self, oldname: str, newname: str):
+    """
+    Renames a state in the automaton from `oldname` to `newname`
+    """
+    if newname in self.states :
+      warn("New name \"{}\" already exists, try a new one".format(newname))
+      return
+    try :
+      self.statesdict[newname] = self.statesdict[oldname]
+      self.statesdict[newname].name = newname
+      del self.statesdict[oldname]
+    except KeyError:
+      warn("Tried to rename not-existent state \"{}\"".format(oldname))
+
 ##################
 
   @property
@@ -232,16 +259,16 @@ class Automaton():
   size=\"8,5\""""
       res += "  label=\"{}\"".format(self.name)
       if self.acceptstates:
-        accept = " ".join(self.acceptstates)
+        accept = " ".join(map(lambda x : '"'+x+'"', self.acceptstates))
         res += "  node [shape = doublecircle]; {};\n".format(accept)   
       res += "  node [shape = circle];\n"
       res += "  __I__ [label=\"\", style=invis, width=0]\n"
-      res += "  __I__ -> {}\n".format(self.initial)    
+      res += "  __I__ -> \"{}\"\n".format(self.initial)    
       for s in self.statesdict.values():
         for (a,ds) in s.transitions.items():
           for d in ds:
             sym = a if a != EPSILON else "ε"
-            res += "  {s} -> {d} [label = {a}];\n".format(s=s,d=d,a=sym)
+            res += "  \"{s}\" -> \"{d}\" [label = {a}];\n".format(s=s,d=d,a=sym)
       res += "}"    
     output = Source(res)
     if outfilename:      
