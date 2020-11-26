@@ -3,7 +3,7 @@
 Module to represent, build and manipulate finite state automata
 """
 
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from collections import OrderedDict, Counter # remember order of insertion
 import sys
 import os.path
@@ -179,6 +179,22 @@ class Automaton():
                                  if v.is_accept})
     return list(accept.keys())
     
+##################
+
+  @property
+  def transitions(self)->List[Tuple[str,str,str]]:
+    """
+    Returns a list of transitions, each represented as a tuple.
+    The tuple contains three strings: (source, symbol, destination)
+    """
+    result = []
+    for source in self.statesdict.values():
+      for (symbol,dests) in source.transitions.items():
+        for destination in dests :
+          result.append((source.name,symbol,destination.name))
+    return result
+          
+
 ##################
 
   def rename_state(self, oldname: str, newname: str):
