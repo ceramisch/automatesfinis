@@ -66,11 +66,11 @@ class State():
 
 ##################
     
-  def make_accept(self):
+  def make_accept(self, accepts:bool=True):
     """
-    Transform the current state into an accept state
+    Transform state into accept state, or the opposite, if accepts=False
     """
-    self.is_accept = True
+    self.is_accept = accepts
 
 ##################
    
@@ -125,6 +125,16 @@ class Automaton():
     self.initial = None 
 
 ##################
+
+  def deepcopy(self)->'Automaton':
+    """
+    Make a deep copy of itself, that is a copy of all elements
+    """
+    a = Automaton(self.name + "_copy")
+    a.from_txt(self.to_txtfile())
+    return a
+
+##################
       
   def add_transition(self, src:str, symbol:str, dst:str):
     """
@@ -173,11 +183,17 @@ class Automaton():
   @property
   def acceptstates(self)->List[str]:
     """
-    Return a set of accept states in the automaton
+    Return a set of accept states in the automaton.
+    If the initial state is accepting, then it is the first in the list
     """
     accept = OrderedDict({k:None for (k,v) in self.statesdict.items() \
                                  if v.is_accept})
-    return list(accept.keys())
+    if self.initial.name in accept :
+      result = [self.initial.name]
+      del(accept[self.initial.name])
+    else :
+      result = []
+    return result + list(accept.keys())
     
 ##################
 
@@ -186,12 +202,19 @@ class Automaton():
     """
     Returns a list of transitions, each represented as a tuple.
     The tuple contains three strings: (source, symbol, destination)
+    The first transitions are always from the initial state
     """
     result = []
+    # Transitions from initial state    
+    for (symbol,dests) in self.initial.transitions.items():
+      for destination in dests :
+        result.append((self.initial.name,symbol,destination.name))       
+    # Transitions from other states      
     for source in self.statesdict.values():
-      for (symbol,dests) in source.transitions.items():
-        for destination in dests :
-          result.append((source.name,symbol,destination.name))
+      if source != self.initial :
+        for (symbol,dests) in source.transitions.items():
+          for destination in dests :
+            result.append((source.name,symbol,destination.name))
     return result
           
 
@@ -240,7 +263,7 @@ class Automaton():
 	  
 ##################
     
-  def make_accept(self, src:Union[str,List[str]]):
+  def make_accept(self, src:Union[str,List[str]], accepts:bool=True):
     """
     Transform the a state(s) of the automaton into accept state(s)
     """
@@ -249,7 +272,7 @@ class Automaton():
     for srci in src:
       if srci not in self.statesdict:
         error("Accept state {a} inexistent!",a=srci)
-      self.statesdict[srci].make_accept()
+      self.statesdict[srci].make_accept(accepts)
     
 ##################
 
@@ -279,12 +302,10 @@ class Automaton():
         res += "  node [shape = doublecircle]; {};\n".format(accept)   
       res += "  node [shape = circle];\n"
       res += "  __I__ [label=\"\", style=invis, width=0]\n"
-      res += "  __I__ -> \"{}\"\n".format(self.initial)    
-      for s in self.statesdict.values():
-        for (a,ds) in s.transitions.items():
-          for d in ds:
-            sym = a if a != EPSILON else "ε"
-            res += "  \"{s}\" -> \"{d}\" [label = {a}];\n".format(s=s,d=d,a=sym)
+      res += "  __I__ -> \"{}\"\n".format(self.initial)      
+      for (s,a,d) in self.transitions:
+        sym = a if a != EPSILON else "ε"
+        res += "  \"{s}\" -> \"{d}\" [label = {a}];\n".format(s=s,d=d,a=sym)      
       res += "}"    
     output = Source(res)
     if outfilename:      
@@ -298,10 +319,8 @@ class Automaton():
     Save automaton into txt file.
     """
     res = ""
-    for s in self.statesdict.values():
-      for (a,ds) in s.transitions.items():
-        for d in ds:
-          res += "{} {} {}\n".format(s.name,a,d.name)
+    for (s,a,d) in self.transitions:
+      res += "{} {} {}\n".format(s,a,d)          
     res += "A "
     res += " ".join([s for s in self.acceptstates])      
     if outfilename:
@@ -360,12 +379,14 @@ if __name__ == "__main__": # If the module is run from command line, test it
   a.add_transition("0","b","2")
   a.add_transition("2","b","2")  
   a.make_accept(["0","1", "2"])  
-  print(a)
+  print(a)  
   a.to_graphviz("my-test-automaton.gv")
+  b = a.deepcopy()
   a.reset()
+  print(b)
   for testfile in ["astarbstar","astarbstar-nfa","astarbstar-epsilon"]:
     a.from_txtfile("test/{}.af".format(testfile))
     a.to_graphviz("test/{}.gv".format(testfile))
     print(a)
     print(a.to_txtfile())
-
+    
