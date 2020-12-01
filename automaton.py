@@ -150,6 +150,24 @@ class Automaton():
 
 ##################
 
+  def remove_state(self, delstate:str):
+    """
+    Remove `delstate` from the automaton as well as all its transitions.
+    """
+    if delstate not in self.statesdict :     
+      warn("State {} does not exist, will not remove".format(delstate))
+      return    
+    delstateobj = self.statesdict[delstate]
+    del(self.statesdict[delstate]) # First, remove from main states list
+    for state in self.statesdict.values(): # For all remaining states
+      for (symbol,dests) in state.transitions.items() :
+        if delstateobj in dests :
+          del(dests[delstateobj])
+      if state.transitions and not state.transitions[symbol] : 
+        del(state.transitions[symbol]) # no transition left on symbol
+          
+##################
+
   def remove_transition(self, src:str, symbol:str, dst:str):
     """
     Remove a transition from `src` to `dst` on `symbol`
@@ -177,6 +195,38 @@ class Automaton():
       for s in state.transitions.keys():       
         alphabet[s] = None
     return list(alphabet.keys())
+
+##################
+
+  @property
+  def reachable_states(self) -> List[str]:
+    """
+    Returns a list of reachable states in the automaton
+    """
+    result = set([self.initial])
+    nbelems = 0
+    while nbelems != len(result) :
+      nbelems = len(result)
+      addtoresult = []
+      for state in result :        
+        for destlist in state.transitions.values() :
+          for dest in destlist :
+            addtoresult.append(dest)
+      result = result.union(addtoresult)
+    return list(map(lambda x:x.name,result))
+
+##################
+
+  def remove_unreachable(self):
+    """
+    Remove unreachable states from the automaton
+    """
+    removed = []
+    for state in self.states :
+      if not state in self.reachable_states :
+        removed.append(state)
+    for r in removed :
+      self.remove_state(r)
 
 ##################
 
