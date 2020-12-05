@@ -47,7 +47,7 @@ def union(a1:Automaton, a2:Automaton)->Automaton:
   
 ##################
    
-def regexp_to_automaton(re:str)->'Automaton':
+def regexp_to_automaton(re:str)->Automaton:
   """
   Moore's algorithm: regular expression `re` -> non-deterministic automaton
   """
