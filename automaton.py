@@ -3,7 +3,7 @@
 Module to represent, build and manipulate finite state automata
 """
 
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Optional
 from collections import OrderedDict, Counter # remember order of insertion
 import sys
 import os.path
@@ -46,7 +46,7 @@ EPSILON = "%" # Constant to represent empty string
 
 ########################################################################
 
-class State():
+class State(object):
   """
   Represents a state in the automaton, with its list of transitions
   """
@@ -96,7 +96,7 @@ class State():
 ########################################################################
 ########################################################################
 
-class Automaton():
+class Automaton(object):
   """
   An automaton is a list of states and a pointer to the initial state
   Transitions and acceptance are represented inside states (see above)
@@ -238,7 +238,7 @@ class Automaton():
     """
     accept = OrderedDict({k:None for (k,v) in self.statesdict.items() \
                                  if v.is_accept})
-    if self.initial.name in accept :
+    if self.initial and self.initial.name in accept :
       result = [self.initial.name]
       del(accept[self.initial.name])
     else :
@@ -419,6 +419,69 @@ class Automaton():
     name = os.path.splitext(os.path.basename(infilename))[0]
     return self.from_txt("".join(rows), name)
     
+########################################################################
+########################################################################
+
+class RegExpReader(object):
+  """
+  A reader for regular expressions, mainly used to convert to postfix notation
+  """
+  
+  exp:str
+  hd:int
+  
+  def __init__(self,exp:str)->None:
+    """
+    re is an infix regular expression (union +, kleene * and concatenation)
+    """
+    self.exp = exp
+    
+  def to_postfix(self)->Optional[str]:
+    """
+    Convert current regexp to postfix notation using a top-down LL parser
+    You'll learn about this parser in L3 - Compilation ;-)
+    We implement the following context-free grammar (L2 Langages formels ;-)
+    E -> C E'; E' -> '+' C E' | epsilon; C -> K C'; C' -> K C' | epsilon
+    K -> '(' E ')' K' | a K'; K' -> '*' | epsilon
+    """
+    def re_error(fct:str, ex: str, found: str):
+      error("\"{}\": \"{}\" expected, \"{}\" found".format(fct, ex, found))
+    def elem(re:str)->bool:
+      return re[self.hd].isalnum() or re[self.hd] == EPSILON
+    def forward(re:str, ex: str):
+      if re[self.hd] == ex : self.hd += 1
+      else: re_error("forward",ex,re[self.hd])
+    def e(re:str)->Optional[str]:
+      if re[self.hd] == "(" or elem(re): return ebis(re, c(re))
+      else: re_error("e","( or symbol", re[self.hd]); return None
+    def ebis(re:str, h:str)->Optional[str]:
+      if re[self.hd] in "+": forward(re, '+'); return h + ebis(re, c(re)) + "+"
+      elif re[self.hd] in ")$": return h
+      else: re_error("ebis",")+$ or symbol", re[self.hd]); return None
+    def c(re:str)->Optional[str]:
+      if re[self.hd] == "(" or elem(re): return cbis(re, k(re))
+      else: re_error("c","( or symbol",re[self.hd]); return None
+    def cbis(re:str,h:str)->Optional[str]:
+      if re[self.hd] == "(" or elem(re): return h + cbis(re, k(re)) + "."
+      elif re[self.hd] in "+)$": return h
+      else: re_error("cbis","()+$ or symbol", re[self.hd]); return None
+    def k(re:str)->Optional[str]:
+      if elem(re) : r = re[self.hd]; forward(re, r)
+      elif re[self.hd] == '(' : forward(re, '('); r = e(re); forward(re, ')')        
+      else: re_error("k","( or symbol", re[self.hd]); return None
+      return kbis(re,r)
+    def kbis(re:str,h:str)->Optional[str]:
+      if self.hd >= len(re): pdb.set_trace()
+      if re[self.hd] == '*' : forward(re, '*'); return h + "*"
+      elif re[self.hd] in "+()$" or elem(re): return h
+      else: re_error("kbis","()+$* or symbol", re[self.hd]); return None
+              
+    self.hd = 0 # reading head, initialized once and kept during parsing
+    result = e(self.exp+"$")
+    if self.hd == len(self.exp):
+      return result
+    else: return error("Stopped at index {} \"{}\"".format(self.hd,self.exp[self.hd]))
+
 ########################################################################
 ########################################################################
 
