@@ -132,6 +132,7 @@ class Automaton(object):
     """
     a = Automaton(self.name + "_copy")
     a.from_txt(self.to_txtfile())
+    a.initial = a.statesdict[self.initial.name]
     return a
 
 ##################
@@ -313,7 +314,7 @@ class Automaton(object):
 	  
 ##################
     
-  def make_accept(self, src:Union[str,List[str]], accepts:bool=True):
+  def make_accept(self, src:Union[str,List[str]], accepts:bool=True, add:bool=False):
     """
     Transform the a state(s) of the automaton into accept state(s)
     """
@@ -321,7 +322,10 @@ class Automaton(object):
       src = [src] # transform in list if necessary
     for srci in src:
       if srci not in self.statesdict:
-        error("Accept state {a} inexistent!",a=srci)
+        if add :
+          self.statesdict[srci] = State(srci)          
+        else :
+          error("Accept state {a} inexistent!",a=srci)
       self.statesdict[srci].make_accept(accepts)
     
 ##################
@@ -403,7 +407,7 @@ class Automaton(object):
         error("Malformed triple {t}",pos=name+":"+str(i+1),t=row.strip())
     if not rows[-1].startswith("A"):
       error("File must end with \"A\" row",pos=name+":"+str(len(rows)))
-    self.make_accept(rows[-1].strip().split(" ")[1:])
+    self.make_accept(rows[-1].strip().split(" ")[1:], add=True)
 
 ##################
     
