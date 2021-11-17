@@ -14,13 +14,13 @@ import pdb # for debugging
 
 def is_deterministic(a:'Automaton')->bool:
   #TODO implement!
-  return False
+  return True
   
 ##################
   
 def recognizes(a:'Automaton', word:str)->bool:
   #TODO implement!
-  return False
+  return True 
 
 ##################
 
