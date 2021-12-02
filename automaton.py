@@ -16,10 +16,10 @@ import re
 def warn(message, *, warntype="WARNING", pos="", **format_args):
   """Print warning message."""
   msg_list = message.format(**format_args).split("\n")
-  beg, end = ('\x1b[31m', '\x1b[m') if sys.stderr.isatty() else ('', '')
+  beg, end = ('\x1b[33m', '\x1b[m') if sys.stderr.isatty() else ('', '')
   if pos: pos += ": "
   for i, msg in enumerate(msg_list):
-    warn = warntype if i==0 else "."*len(warntype)
+    warn = warntype if i==0 else " "*len(warntype)
     print(beg, pos, warn, ": ", msg, end, sep="", file=sys.stderr)
 
 ##################
@@ -334,9 +334,10 @@ class Automaton(object):
     """
     Standard function to obtain a string representation of an automaton
     """
+    alphabet_no_eps = [ x for x in self.alphabet if x is not EPSILON ]
     tpl = "{A} = <Q={{{Q}}}, S={{{S}}}, D, q0={q0}, F={{{F}}}>\nD =\n{D}"    
     return tpl.format(A=self.name, Q=str(",".join(self.states)),
-                      S=",".join(self.alphabet), q0=self.initial, 
+                      S=",".join(alphabet_no_eps), q0=self.initial, 
                       F=",".join(self.acceptstates),
                       D=self.transition_table)
 

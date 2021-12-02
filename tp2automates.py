@@ -14,13 +14,13 @@ import pdb # for debugging
 ##################
 
 def is_deterministic(a:Automaton)->bool:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return False
   
 ##################
   
 def recognizes(a:Automaton, word:str)->bool:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return False
   
 ##################
@@ -32,12 +32,16 @@ def determinise(a:Automaton):
 ##################
 
 if __name__ == "__main__" :
-  if len(sys.argv) != 3:
-    usagestring = "Usage: {} <automaton-file.af> <word-to-recognize>"
-    error(usagestring.format(sys.argv[0]))
+  # First, checks that the script has 2 arguments
+  if len(sys.argv) != 3: # If not, show error message and exit
+    usagestring = """This script requires two arguments: <automaton-file.af> and <word>
+  * <automaton-file.af> is a text file containing an automaton description.
+  * <word> is a string, the word to recognize.
+Don't forget to specify the command-line options"""
+    error(usagestring)
 
-  automatonfile = sys.argv[1]  
-  word = sys.argv[2]
+  automatonfile = sys.argv[1]  # First command-line argument: file to read automaton from
+  word = sys.argv[2]           # Second command-line argument: word to recognise
 
   a = Automaton("dummy")
   a.from_txtfile(automatonfile)

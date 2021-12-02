@@ -12,37 +12,37 @@ import pdb # for debugging
 ##################
 
 def is_deterministic(a:Automaton)->bool:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return False
   
 ##################
   
 def recognizes(a:Automaton, word:str)->bool:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return False
   
 ##################
 
 def determinise(a:Automaton):
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   pass  
 
 ##################
 
 def kleene(a1:Automaton)->Automaton:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return a1 
 
 ##################
 
 def concat(a1:Automaton, a2:Automaton)->Automaton:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return a1 
 
 ##################
 
 def union(a1:Automaton, a2:Automaton)->Automaton:
-  # Copy-paste or import from previous TPs
+  # Copy-paste from previous TPs
   return a1 
   
 ##################
@@ -59,10 +59,13 @@ def regexp_to_automaton(re:str)->Automaton:
 ##################
 
 if __name__ == "__main__" :
-
-  if len(sys.argv) != 3:
-    usagestring = "Usage: {} <regular-expression> <word-to-recognize>"
-    error(usagestring.format(sys.argv[0]))
+  # First, checks that the script has 2 arguments
+  if len(sys.argv) != 3: # If not, show error message and exit
+    usagestring = """This script requires two arguments: <regular-expression> and <word>
+  * <regular-expression> is a string, representing a regular expression that denotes a language.
+  * <word> is a string, the word to recognize (is it in the denoted language?).
+Don't forget to specify the command-line options"""
+    error(usagestring)
 
   regexp = sys.argv[1]  
   word = sys.argv[2]

@@ -27,11 +27,16 @@ def union(a1:Automaton, a2:Automaton)->Automaton:
 
 ##################
 
-if __name__ == "__main__" :
-  if len(sys.argv) != 3:
-    usagestring = "Usage: {} <automaton-file1.af> <automaton-file2.af>"
-    error(usagestring.format(sys.argv[0]))
 
+if __name__ == "__main__" :
+  # First, checks that the script has 2 arguments
+  if len(sys.argv) != 3: # If not, show error message and exit
+    usagestring = """This script requires two arguments: <automaton-file1.af> and <automaton-file2.af>
+  * <automaton-file1.af> is a text file containing the first automaton description.
+  * <automaton-file2.af> is a text file containing the second automaton description.
+Don't forget to specify the command-line options"""
+    error(usagestring)
+    
   # First automaton, argv[1]
   a1 = Automaton("dummy")
   a1.from_txtfile(sys.argv[1])
