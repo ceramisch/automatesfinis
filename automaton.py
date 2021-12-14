@@ -116,9 +116,8 @@ class Automaton(object):
     """
     Reinitialize the automaton with empty content
     """
-    if name:
-      self.name = name
-    elif not self.name:
+    self.name = name
+    if not self.name:
       self.name = "NewAutomaton"
       warn("New automaton has no name")
     self.statesdict = OrderedDict()   
@@ -253,19 +252,33 @@ class Automaton(object):
     """
     Returns a list of transitions, each represented as a tuple.
     The tuple contains three strings: (source, symbol, destination)
-    The first transitions are always from the initial state
     """
+    return self.find_transitions()
+
+##################
+
+  def find_transitions(self,source:str=None, symbol:str=None, dest:str=None)->List[Tuple[str,str,str]]:
+    """
+    Returns a list of transitions, each represented as a tuple.
+    The tuple contains three strings: (source, symbol, destination)
+    You can specify a `source` state, `symbol` or `dest` state to filter the retrieved transitions
+    By convention, the first transitions are from the initial state
+    """
+    def match(s,a,d,si,ai,di) :
+      return (s is None or s == si.name) and (a is None or a == ai) and (d is None or d == di.name)
     result = []
     # Transitions from initial state    
-    for (symbol,dests) in self.initial.transitions.items():
-      for destination in dests :
-        result.append((self.initial.name,symbol,destination.name))       
+    for (symboli,destsi) in self.initial.transitions.items():
+      for desti in destsi :
+        if match(source, symbol, dest, self.initial, symboli, desti) :
+          result.append((self.initial.name,symboli,desti.name))       
     # Transitions from other states      
-    for source in self.statesdict.values():
-      if source != self.initial :
-        for (symbol,dests) in source.transitions.items():
-          for destination in dests :
-            result.append((source.name,symbol,destination.name))
+    for sourcei in self.statesdict.values():
+      if sourcei != self.initial :
+        for (symboli,destsi) in sourcei.transitions.items():
+          for destinationi in destsi :  
+            if match(source, symbol, dest, sourcei, symboli, desti) :          
+              result.append((sourcei.name,symboli,destinationi.name))
     return result
           
 
@@ -507,4 +520,6 @@ if __name__ == "__main__": # If the module is run from command line, test it
     a.to_graphviz("test/{}.gv".format(testfile))
     print(a)
     print(a.to_txtfile())
+  print("Find transitions")
+  print(a.find_transitions(source="3",symbol="b"))
     
